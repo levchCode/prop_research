@@ -28,7 +28,7 @@ async function setup() {
     const y = tf.tensor1d(vol_arr)
     
     model = tf.sequential()
-    const hidden = tf.layers.dense({inputShape:[3], units:10, activation: "relu"});
+    const hidden = tf.layers.dense({inputShape:[3], units:50, activation: "relu"});
     const output = tf.layers.dense({units:1, activation: "relu"});
     model.add(hidden)
     model.add(output)
@@ -38,19 +38,19 @@ async function setup() {
     for (let i = 0; i < iter; i++)
     {
         const h = await model.fit(x, y, {epochs:1})
-        console.log(h.history.loss[0])
+        document.getElementById("t_p").innerHTML = h.history.loss[0]
+        
     }
-
-    const k = await model.save('downloads://my-model-1');
+    //document.getElementById("t_p").innerHTML = "DONE!"
 
 }
 
 
 async function predict()
 {
-    k = parseInt(document.getElementById("k").value)
-    a = parseInt(document.getElementById("a").value)
-    sf = parseInt(document.getElementById("sf").value)
+   let k = parseInt(document.getElementById("k").value)
+   let a = parseInt(document.getElementById("a").value)
+   let sf = parseInt(document.getElementById("sf").value)
 
     const inputs = tf.tensor2d([[a, k, sf]])
     const out = await model.predict(inputs).data()
