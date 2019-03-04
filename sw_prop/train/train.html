@@ -1,0 +1,42 @@
+<html>
+    <head>
+        <title>Project SW</title>
+        <meta charset="UTF-8">
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.15.1/dist/tf.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.min.js"></script>
+        <script src="main_train.js"></script>
+    </head>
+    <body>
+            
+        <h1>Predict the volume of BBC World Service on 7405 kHz</h1>
+
+        <h2>Current conditions</h2>
+
+        <a href="http://www.hamqsl.com/solar.html" title="Click to add Solar-Terrestrial Data to your website!"><img src="http://www.hamqsl.com/solarsmall.php"></a>
+
+        <br>
+        <br>
+
+        Kp index: <input type="number" id="k">
+
+        <br>
+        <br>
+
+        Ap index: <input type="number" id="a">
+
+        <br>
+        <br>
+
+        Solar flux index: <input type="number" id="sf">
+
+        <br>
+        <br>
+
+        <button onclick="predict()">Predict</button>
+
+        <br>
+        <br>
+
+        Predicted volume: <p id="volume"> </p>
+    </body>
+</html>

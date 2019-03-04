@@ -1,6 +1,5 @@
 #
 # x0 (date)
-# x1 (number_of_sun spots today)
 # x2 (k-index)
 # x3 (solar flux)
 # y (volume of a station 7405 kHz, in db)
@@ -26,33 +25,58 @@ def get_volume(day):
     cropped_img.save("waterfall_pictures/freq/7405 " + str(day) + ".png")
     stat = ImageStat.Stat(cropped_img.convert('L'))
 
-    return maprange((0,150), (-38,-110), stat.mean[0])
+    return maprange((0,255), (0, 200), stat.mean[0])
 
 
 def get_date_from_day(day):
     # 16514 is March 20th 2015
     start = 16514
-    startdate = datetime.datetime.strptime("03/20/15", "%m/%d/%y")
+    startdate = datetime.datetime.strptime("20/03/15", "%d/%m/%y")
     return startdate + datetime.timedelta(days=(day-start))
+
+def get_day_from_date(d):
+    start = 16514
+    startdate = datetime.datetime.strptime("20/03/15", "%d/%m/%y")
+    current = datetime.datetime.strptime(d, "%d/%m/%y")
+    return start + abs((current - startdate).days)
 
 
 
 if __name__ == "__main__":
+    # 17863 - 28 ноября 2018 года
+    # 17917 - 21 января 2018 года
 
-    r_s = requests.get("https://services.swpc.noaa.gov/json/predicted_monthly_sunspot_number.json").json()
-    
-    data = []
-    #range(17863, 17916)
-    for i in range(17863, 17916):
-        print(i)
-        d = get_date_from_day(i)
-        for k in r_s:
-            if datetime.date.fromisoformat(k["date"]).month == d.month and datetime.date.fromisoformat(k["date"]).year == d.year:
-                num_spots = k["ssn_predicted"]
-                flux = k["flux_predicted"]
-        
-        vol = get_volume(i)
-        data.append(({"date": i, "num_spots": num_spots, "flux": flux, "volume": vol}))
+    # data = []
 
-    df = pd.DataFrame(data)
-    df.to_csv("sw.csv", index=False)
+    # for i in range(17863, 17916):
+    #     print(i)
+
+    #     d = get_date_from_day(i)
+
+    #     vol = get_volume(i)
+    #     data.append(({"date": d, "day":i, "volume": vol}))
+                
+    # df = pd.DataFrame(data)
+    # df.to_csv("sw.csv", index=False)
+
+    # v = pd.read_csv('sw.csv')
+    # i = pd.read_csv('a-k-flux.csv')
+
+    # df = pd.DataFrame({"day":v["day"], "a":i["a"], "k":i["k"], "solar_flux":i["solar_flux"], "volume":v["volume"]})
+
+    # df.to_csv("combined.csv", index=False)
+
+    f = open("kp2019.wdc", "r").readlines()
+
+    for i in f:
+        y = i[0:2]
+        m = i[2:4]
+        d = i[4:6]
+
+        date = datetime.date(2000 + int(y), int(m), int(d))
+
+
+        kp = i[23:25]
+        ap = i[47:49]
+
+        print(date, kp, ap)
