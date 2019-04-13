@@ -11,85 +11,79 @@
             float: left;    
         }
         </style>
+
         <h1>Predict the volume of BBC World Service on 7405 kHz</h1>
         <div class="left">
-        <h2>Current conditions</h2>
+            <h2>Current conditions</h2>
 
-        <a href="http://www.hamqsl.com/solar.html" title="Click to add Solar-Terrestrial Data to your website!"><img src="http://www.hamqsl.com/solarsmall.php"></a>
+            <a href="http://www.hamqsl.com/solar.html" title="Click to add Solar-Terrestrial Data to your website!"><img src="http://www.hamqsl.com/solarsmall.php"></a>
 
-        <br>
-        <br>
+            <br>
+            <br>
 
-        Solar flux index: <input type="number" id="sf">
-        
-        <br>
-        <br>
+            Ap index: <input type="number" id="a">
 
-        Ap index: <input type="number" id="a">
+            <br>
+            <br>
 
-        <br>
-        <br>
+            Kp index: <input type="number" id="k">
 
-        Kp index: <input type="number" id="k">
+            <br>
+            <br>
 
-        <br>
-        <br>
+            <button onclick="predict()">Predict</button>
 
-        <button onclick="predict()">Predict</button>
+            <br>
+            <br>
 
-        <br>
-        <br>
+            Predicted volume: <p id="volume"> </p>
+        </div>
 
-        Predicted volume: <p id="volume"> </p>
-    </div>
-    <div class="right">
-        <h2>Mean Squared Error:</h2>
-        <p id="t_p"></p>
-    </div>
+        <div>
+            <h2>Mean Squared Error:</h2>
+            <p id="t_p"></p>
+        </div>
 
     <script>
-        let data_URL = "https://dl.dropboxusercontent.com/s/edhaj1h8jk6pfin/data.csv?dl=0";
-let data;
-let model;
-let iter = 200
+    let data_URL = "https://dl.dropbox.com/s/8y0t3qfxnmk1h2i/data.csv?dl=0";
+    let data;
+    let model;
+    let iter = 100
+    
+    function preload(){
+      noLoop()
+      data = loadTable(data_URL, "csv", "header")
+    }
 
-function preload(){
-    noLoop()
-    data = loadTable(data_URL, "csv", "header")
-}
 
-
-async function setup() {
-    len = data.getRowCount();
+    async function setup() {
+    let len = data.getRowCount();
     let a_arr = [];
     let k_arr = [];
-    let solar_flux_arr = [];
     let vol_arr = [];
 
     for (let i = 0; i < len; i++)
     {
         a_arr.push(data.getNum(i, "a"))
         k_arr.push(data.getNum(i, "k"))
-        solar_flux_arr.push(data.getNum(i, "solar_flux"))
         vol_arr.push(data.getNum(i, "volume"))
     }
 
-    const x = tf.tensor2d([a_arr, k_arr, solar_flux_arr]).reshape([len, 3])
+    const x = tf.tensor2d([a_arr, k_arr]).reshape([len, 2])
     const y = tf.tensor1d(vol_arr)
     
     model = tf.sequential()
-    const hidden = tf.layers.dense({inputShape:[3], units:50, activation: "relu"});
+    const hidden = tf.layers.dense({inputShape:[2], units:100, activation: "relu"});
     const output = tf.layers.dense({units:1, activation: "relu"});
     model.add(hidden)
     model.add(output)
 
-    model.compile({optimizer:tf.train.adam(0.015), loss:"meanSquaredError"})
+    model.compile({optimizer:tf.train.adam(0.05), loss:"meanSquaredError"})
     
     for (let i = 0; i < iter; i++)
     {
         const h = await model.fit(x, y, {epochs:1})
-        document.getElementById("t_p").innerHTML = h.history.loss[0]
-        
+        document.getElementById("t_p").innerHTML = h.history.loss[0] 
     }
     //document.getElementById("t_p").innerHTML = "DONE!"
 
@@ -100,9 +94,8 @@ async function predict()
 {
    let k = parseInt(document.getElementById("k").value)
    let a = parseInt(document.getElementById("a").value)
-   let sf = parseInt(document.getElementById("sf").value)
 
-    const inputs = tf.tensor2d([[a, k, sf]])
+    const inputs = tf.tensor2d([[a, k]])
     const out = await model.predict(inputs).data()
     document.getElementById("volume").innerHTML = out
 }

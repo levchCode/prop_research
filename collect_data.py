@@ -17,15 +17,15 @@ def maprange(a, b, s):
 
 def get_volume(day):
 
-    image_url = "http://websdr.ewi.utwente.nl:8901/fullday/day" + \
-        str(day) + ".png"
+    image_url = "http://websdr.ewi.utwente.nl:8901/fullday/day" + str(day) + ".png"
+
     img = Image.open(requests.get(image_url, stream=True).raw)
-    img.save("waterfall_pictures/full/FULL " + str(day) + ".png")
+
     cropped_img = img.crop((4157, 958, 4163, 1000))
     cropped_img.save("waterfall_pictures/freq/7405 " + str(day) + ".png")
     stat = ImageStat.Stat(cropped_img.convert('L'))
 
-    return maprange((0,255), (0, 200), stat.mean[0])
+    return stat.mean[0]/4
 
 
 def get_date_from_day(day):
@@ -43,40 +43,28 @@ def get_day_from_date(d):
 
 
 if __name__ == "__main__":
-    # 17863 - 28 ноября 2018 года
-    # 17917 - 21 января 2018 года
+    #17897 - 1 января 2019 года
+    #17986 - 31 марта 2019 года
 
-    # data = []
+    SNRs = []
+    dates = []
+    days = []
+    ais = []
+    ks = [] 
+    f = open("indexes.txt", "r").readlines()
 
-    # for i in range(17863, 17916):
-    #     print(i)
+    for i in range(17897, 17986):
+        d = get_date_from_day(i)
 
-    #     d = get_date_from_day(i)
-
-    #     vol = get_volume(i)
-    #     data.append(({"date": d, "day":i, "volume": vol}))
+        vol = get_volume(i)
+        print("Processed day {0} : vol: {1}".format(i-17897, vol))
+        dates.append(d)
+        days.append(i)
+        SNRs.append(vol)
                 
-    # df = pd.DataFrame(data)
-    # df.to_csv("sw.csv", index=False)
-
-    # v = pd.read_csv('sw.csv')
-    # i = pd.read_csv('a-k-flux.csv')
-
-    # df = pd.DataFrame({"day":v["day"], "a":i["a"], "k":i["k"], "solar_flux":i["solar_flux"], "volume":v["volume"]})
-
-    # df.to_csv("combined.csv", index=False)
-
-    f = open("kp2019.wdc", "r").readlines()
-
-    for i in f:
-        y = i[0:2]
-        m = i[2:4]
-        d = i[4:6]
-
-        date = datetime.date(2000 + int(y), int(m), int(d))
-
-
-        kp = i[23:25]
-        ap = i[47:49]
-
-        print(date, kp, ap)
+        ks.append(int(f[i-17897][74]))
+        ais.append(int(f[i-17897][60:62]))
+        
+    df = pd.DataFrame({"day":days, "a":ais, "k":ks, "volume":SNRs})
+    #df = pd.DataFrame({"a":ais, "k":ks})
+    df.to_csv("data.csv", index=False)
